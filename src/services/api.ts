@@ -67,9 +67,17 @@ export const summarizationService = {
     return handleResponse(response);
   },
   
-  getRequests: async () => {
+  getRequests: async (filenameQuery?: string, contentQuery?: string) => {
+    const headers = getHeaders();
+    const body = {
+      filename_query: filenameQuery || "",
+      content_query: contentQuery || ""
+    };
+    
     const response = await fetch(`${API_URL}/requests`, {
-      headers: getHeaders(),
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
     });
 
     return handleResponse(response);
