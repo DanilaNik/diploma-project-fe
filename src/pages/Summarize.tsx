@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Paper, Slide, Typography } from '@mui/material';
+import { Box, Container, Paper, Slide, Typography, Snackbar, Alert, Button } from '@mui/material';
 import FileUpload from '../components/FileUpload';
 import { SummaryView } from '../components/SummaryView';
 import { useAuth } from '../contexts/AuthContext';
+import { summarizationService } from '../services/api';
 
 const Summarize: React.FC = () => {
-  const [summary, setSummary] = useState<any>(() => {
-    const saved = localStorage.getItem('summaryData');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [summary, setSummary] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
-  const [status, setStatus] = useState(() => localStorage.getItem('summaryStatus') || 'idle');
+  const [status, setStatus] = useState('idle');
+  const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+
+  // Очищаем localStorage при первой загрузке страницы
+  useEffect(() => {
+    localStorage.removeItem('summaryData');
+    localStorage.removeItem('summaryStatus');
+    setSummary(null);
+    setStatus('idle');
+  }, []);
 
   useEffect(() => {
     if (summary) {
@@ -41,9 +48,23 @@ const Summarize: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log('Saving summary...');
+  const handleSave = async () => {
+    if (!summary || !summary.id) {
+      setError('Невозможно обновить суммаризацию: отсутствуют данные');
+      return;
+    }
+
+    setSavingStatus('saving');
+    try {
+      await summarizationService.updateSummary(summary.id, summary.summary);
+      setSavingStatus('success');
+      // Сбросить статус через 3 секунды
+      setTimeout(() => setSavingStatus('idle'), 3000);
+    } catch (err: any) {
+      console.error('Error updating summary:', err);
+      setError(err?.message || 'Произошла ошибка при обновлении суммаризации');
+      setSavingStatus('error');
+    }
   };
 
   const handleDownload = () => {
@@ -76,6 +97,7 @@ const Summarize: React.FC = () => {
   const handleClear = () => {
     setSummary(null);
     setStatus('idle');
+    setError(null);
     localStorage.removeItem('summaryData');
     localStorage.setItem('summaryStatus', 'idle');
   };
@@ -113,7 +135,9 @@ const Summarize: React.FC = () => {
             maxWidth: 600 
           }}
         >
-          <FileUpload onSuccess={handleSuccess} onError={handleError} onUploadStart={handleFileUploadStart} isProcessing={status === 'processing'} />
+          {!summary && status !== 'processing' && (
+            <FileUpload onSuccess={handleSuccess} onError={handleError} onUploadStart={handleFileUploadStart} isProcessing={status === 'processing'} />
+          )}
           
           {error && (
             <Slide direction="up" in={!!error}>
@@ -140,13 +164,41 @@ const Summarize: React.FC = () => {
                   onSummaryChange={handleSummaryChange}
                   onSave={handleSave}
                   onDownload={handleDownload}
-                  isLoading={false}
+                  isLoading={savingStatus === 'saving'}
                   isAuthenticated={isAuthenticated}
                 />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                  <Button 
+                    variant="outlined" 
+                    color="primary" 
+                    onClick={handleClear}
+                  >
+                    Загрузить новый файл
+                  </Button>
+                </Box>
               </Box>
             </Slide>
           )}
         </Paper>
+
+        <Snackbar
+          open={savingStatus === 'success'}
+          autoHideDuration={3000}
+          onClose={() => setSavingStatus('idle')}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="success">Суммаризация успешно обновлена</Alert>
+        </Snackbar>
+
+        <Snackbar
+          open={savingStatus === 'error'}
+          autoHideDuration={3000}
+          onClose={() => setSavingStatus('idle')}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="error">Ошибка при обновлении суммаризации</Alert>
+        </Snackbar>
       </Container>
     </Box>
   );

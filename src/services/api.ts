@@ -105,5 +105,17 @@ export const summarizationService = {
       headers: getHeaders(),
     });
     return handleResponse(response);
+  },
+
+  updateSummary: async (requestId: number, newSummary: string) => {
+    const response = await fetch(`${API_URL}/requests/${requestId}/update`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        summary: newSummary
+      }),
+    });
+
+    return handleResponse(response);
   }
 }; 

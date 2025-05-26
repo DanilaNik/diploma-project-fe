@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Button, Box, IconButton, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { AppBar, Toolbar, Button, Box, IconButton, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Typography, Avatar, Chip } from '@mui/material';
 import { useAuth } from './contexts/AuthContext';
 import { Home } from './pages/Home';
 import Summarize from './pages/Summarize';
@@ -12,10 +12,11 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
 import HistoryIcon from '@mui/icons-material/History';
 import SummarizeIcon from '@mui/icons-material/Summarize';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SummaryResultPage from './pages/SummaryResultPage';
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
   const isSummarizePage = location.pathname === '/summarize';
@@ -71,7 +72,29 @@ const AppRoutes: React.FC = () => {
                 <Button key={item.text} component={Link} to={item.to} color="primary" sx={{ fontWeight: 700, fontFamily: 'Montserrat, Arial, sans-serif' }}>{item.text}</Button>
               ))}
               {isAuthenticated && (
-                <Button color="error" onClick={logout}>Выйти</Button>
+                <>
+                  <Chip
+                    avatar={<Avatar sx={{ bgcolor: '#1976d2' }}>{user?.name.charAt(0).toUpperCase()}</Avatar>}
+                    label={user?.name}
+                    variant="outlined"
+                    sx={{ 
+                      fontWeight: 600, 
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      borderColor: 'transparent'
+                    }}
+                  />
+                  <Button 
+                    color="error" 
+                    onClick={logout}
+                    startIcon={<ExitToAppIcon />}
+                    sx={{ 
+                      fontWeight: 600, 
+                      fontFamily: 'Montserrat, Arial, sans-serif' 
+                    }}
+                  >
+                    Выйти
+                  </Button>
+                </>
               )}
               {!isAuthenticated && !isAuthPage && (
                 <Button component={Link} to="/login" color="primary" startIcon={<AccountCircle />} sx={{ fontWeight: 700, fontFamily: 'Montserrat, Arial, sans-serif' }}>Войти</Button>
@@ -105,6 +128,18 @@ const AppRoutes: React.FC = () => {
                     />
                   </ListItem>
                   <Divider />
+                  {isAuthenticated && (
+                    <ListItem>
+                      <Box sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
+                        <Avatar sx={{ bgcolor: '#1976d2', width: 32, height: 32, mr: 1.5 }}>
+                          {user?.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {user?.name}
+                        </Typography>
+                      </Box>
+                    </ListItem>
+                  )}
                   {menuItems.map((item) => item.show && (
                     <ListItem key={item.text} disablePadding>
                       <ListItemButton component={Link} to={item.to}>
@@ -117,6 +152,7 @@ const AppRoutes: React.FC = () => {
                   {isAuthenticated && (
                     <ListItem disablePadding>
                       <ListItemButton onClick={logout}>
+                        <ListItemIcon><ExitToAppIcon sx={{ color: '#d32f2f' }} /></ListItemIcon>
                         <ListItemText primary="Выйти" primaryTypographyProps={{ fontWeight: 700, color: '#d32f2f', fontFamily: 'Montserrat, Arial, sans-serif' }} />
                       </ListItemButton>
                     </ListItem>

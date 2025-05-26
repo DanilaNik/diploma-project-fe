@@ -7,6 +7,7 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -38,6 +39,11 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
     setIsEditing(!isEditing);
   };
 
+  const handleSave = () => {
+    onSave();
+    setIsEditing(false); // Выключаем режим редактирования после сохранения
+  };
+
   return (
     <Box sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -55,7 +61,7 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">Краткое содержание</Typography>
           <Box>
-            <Tooltip title={isEditing ? "Save changes" : "Edit summary"}>
+            <Tooltip title={isEditing ? "Сохранить изменения" : "Редактировать"}>
               <IconButton
                 onClick={handleEditToggle}
                 disabled={isLoading}
@@ -77,15 +83,15 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
           sx={{ mb: 2 }}
         />
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {isAuthenticated && (
+          {isAuthenticated && isEditing && (
             <Button
               variant="contained"
               color="primary"
-              startIcon={<SaveIcon />}
-              onClick={onSave}
-              disabled={isLoading || !isEditing}
+              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+              onClick={handleSave}
+              disabled={isLoading}
             >
-              ОБНОВИТЬ
+              {isLoading ? 'СОХРАНЕНИЕ...' : 'СОХРАНИТЬ'}
             </Button>
           )}
           <Button
