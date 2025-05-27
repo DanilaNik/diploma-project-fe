@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -18,24 +18,36 @@ export const Register: React.FC = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { register, isLoading } = useAuth();
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { register, isLoading, error } = useAuth();
   const navigate = useNavigate();
+  
+  // Синхронизируем ошибку из контекста с локальной ошибкой
+  useEffect(() => {
+    if (error) {
+      setLocalError(error);
+    }
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setLocalError(null);
+    setSuccessMessage(null);
 
     if (password !== confirmPassword) {
-      setError('Пароли не совпадают');
+      setLocalError('Пароли не совпадают');
       return;
     }
 
     try {
       await register(email, password, name);
-      navigate('/dashboard');
+      setSuccessMessage('Регистрация успешно завершена! Пожалуйста, войдите в систему.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
-      // Ошибка уже установлена в контексте
+      // Ошибка уже обработана в useEffect выше
     }
   };
 
@@ -65,9 +77,15 @@ export const Register: React.FC = () => {
             </Button>
           </Box>
 
-          {error && (
+          {localError && (
             <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-              {error}
+              {localError}
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
+              {successMessage}
             </Alert>
           )}
 
@@ -83,6 +101,7 @@ export const Register: React.FC = () => {
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
+              error={!!localError}
             />
             <TextField
               margin="normal"
@@ -94,6 +113,7 @@ export const Register: React.FC = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={!!localError}
             />
             <TextField
               margin="normal"
@@ -106,6 +126,7 @@ export const Register: React.FC = () => {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={!!localError && localError.includes('пароль')}
             />
             <TextField
               margin="normal"
@@ -117,6 +138,7 @@ export const Register: React.FC = () => {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              error={!!localError && localError.includes('пароль')}
             />
             <Button
               type="submit"

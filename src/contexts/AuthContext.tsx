@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService } from '../services/api';
 import { jwtDecode } from 'jwt-decode';
 
@@ -29,14 +29,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkTokenExpiration = (token: string): boolean => {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
+      // Увеличиваем время жизни токена на фронтенде (10 часов вместо 30 минут)
+      // Фактически игнорируем истечение срока, если он не истек более 10 часов назад
       const currentTime = Date.now() / 1000;
-      return decoded.exp > currentTime;
+      const hoursSinceExpiration = (currentTime - decoded.exp) / 3600;
+      return hoursSinceExpiration < 10; // Разрешаем использовать токен до 10 часов после истечения срока
     } catch {
       return false;
     }
   };
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (token && checkTokenExpiration(token)) {
@@ -60,11 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -92,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       setError(null);
       await authService.register(email, password, name);
-      await login(email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка при регистрации');
       throw err;
