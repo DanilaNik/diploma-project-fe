@@ -29,7 +29,6 @@ export const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      // Ошибка уже установлена в контексте
     }
   };
 

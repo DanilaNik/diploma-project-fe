@@ -12,7 +12,6 @@ const Summarize: React.FC = () => {
   const [status, setStatus] = useState('idle');
   const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  // Очищаем localStorage при первой загрузке страницы
   useEffect(() => {
     localStorage.removeItem('summaryData');
     localStorage.removeItem('summaryStatus');
@@ -58,7 +57,6 @@ const Summarize: React.FC = () => {
     try {
       await summarizationService.updateSummary(summary.id, summary.summary);
       setSavingStatus('success');
-      // Сбросить статус через 3 секунды
       setTimeout(() => setSavingStatus('idle'), 3000);
     } catch (err: any) {
       console.error('Error updating summary:', err);

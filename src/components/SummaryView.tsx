@@ -41,7 +41,7 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
 
   const handleSave = () => {
     onSave();
-    setIsEditing(false); // Выключаем режим редактирования после сохранения
+    setIsEditing(false);
   };
 
   return (

@@ -23,7 +23,6 @@ export const Register: React.FC = () => {
   const { register, isLoading, error } = useAuth();
   const navigate = useNavigate();
   
-  // Синхронизируем ошибку из контекста с локальной ошибкой
   useEffect(() => {
     if (error) {
       setLocalError(error);
@@ -47,7 +46,6 @@ export const Register: React.FC = () => {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      // Ошибка уже обработана в useEffect выше
     }
   };
 

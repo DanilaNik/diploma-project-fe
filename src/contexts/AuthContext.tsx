@@ -29,11 +29,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkTokenExpiration = (token: string): boolean => {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
-      // Увеличиваем время жизни токена на фронтенде (10 часов вместо 30 минут)
-      // Фактически игнорируем истечение срока, если он не истек более 10 часов назад
       const currentTime = Date.now() / 1000;
       const hoursSinceExpiration = (currentTime - decoded.exp) / 3600;
-      return hoursSinceExpiration < 10; // Разрешаем использовать токен до 10 часов после истечения срока
+      return hoursSinceExpiration < 10;
     } catch {
       return false;
     }

@@ -151,7 +151,6 @@ const Dashboard: React.FC = () => {
         }
     };
 
-    // Обновление URL с параметрами поиска
     const updateSearchParams = useCallback((filename: string, content: string) => {
         const params = new URLSearchParams();
         if (filename) params.set('filename', filename);
@@ -159,7 +158,6 @@ const Dashboard: React.FC = () => {
         setSearchParams(params);
     }, [setSearchParams]);
 
-    // Debounced search function
     const debouncedSearch = useCallback(
         debounce((filename: string, content: string) => {
             fetchRequests(filename || undefined, content || undefined);
@@ -169,7 +167,6 @@ const Dashboard: React.FC = () => {
     );
 
     useEffect(() => {
-        // Первоначальная загрузка с учетом параметров URL
         const initialFilename = searchParams.get('filename') || '';
         const initialContent = searchParams.get('content') || '';
         
@@ -180,7 +177,6 @@ const Dashboard: React.FC = () => {
         }
     }, [searchParams]);
 
-    // Effect for handling real-time search
     useEffect(() => {
         if (filenameQuery !== '' || contentQuery !== '') {
             setSearching(true);
@@ -506,7 +502,6 @@ const Dashboard: React.FC = () => {
     );
 };
 
-// Debounce helper function
 function debounce<F extends (...args: any[]) => any>(func: F, wait: number) {
     let timeout: ReturnType<typeof setTimeout> | null = null;
     
